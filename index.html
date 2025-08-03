@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura do Herói</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="hud">
+            <span id="hero-info">Herói: --</span>
+            <span id="xp-info">XP: 0</span>
+            <span id="level-info">Nível: Ferro</span>
+            <span id="lives-info">Vidas: 3</span> <!-- Elemento para exibir as vidas -->
+        </div>
+        <div id="hero"></div>
+        <div id="obstacle"></div>
+    </div>
+
+    <div id="setup-container">
+        <h1>Prepare seu Herói</h1>
+        <input type="text" id="heroNameInput" placeholder="Digite o nome do seu herói">
+        <button id="startGameButton">Iniciar Aventura</button>
+    </div>
+
+    <div id="game-over-container">
+        <h1>Game Over</h1>
+        <p id="final-score"></p>
+        <button id="restartGameButton">Jogar Novamente</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

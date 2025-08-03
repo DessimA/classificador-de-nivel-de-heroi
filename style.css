@@ -1,0 +1,167 @@
+:root {
+    --game-bg: #87CEEB;
+    --ground-height: 50px;
+    --hero-width: 80px;
+    --hero-height: 100px;
+    --obstacle-width: 40px;
+    --obstacle-height: 80px;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--game-bg);
+    border-bottom: var(--ground-height) solid #8B4513;
+    display: none; /* Oculto por padrão */
+}
+
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px #000;
+}
+
+#hud span {
+    margin-right: 20px;
+}
+
+#hero {
+    position: absolute;
+    bottom: var(--ground-height);
+    left: 50px;
+    width: var(--hero-width);
+    height: var(--hero-height);
+        background-image: url('assets/img/hero-run.gif'); /* Substitua com o caminho correto */
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+#hero.jump {
+    animation: jump 0.8s linear;
+        background-image: url('assets/img/hero-jump.gif'); /* Substitua com o caminho correto */
+}
+
+#obstacle {
+    position: absolute;
+    bottom: var(--ground-height);
+    right: -100px;
+    width: var(--obstacle-width);
+    height: var(--obstacle-height);
+    background-color: #654321;
+    display: none; /* Oculto até o jogo começar */
+}
+
+#obstacle.move {
+    animation: moveObstacle 2.5s linear;
+}
+
+#setup-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #2c3e50;
+    color: white;
+}
+
+#setup-container h1 {
+    font-size: 3em;
+}
+
+#setup-container input {
+    padding: 15px;
+    font-size: 1.2em;
+    margin: 20px;
+    border-radius: 5px;
+    border: none;
+    width: 50%;
+}
+
+#setup-container button {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #27ae60;
+    color: white;
+    transition: background-color 0.3s;
+    width: 50%;
+}
+
+#setup-container button:hover {
+    background-color: #2ecc71;
+}
+
+/* Keyframes para animações */
+@keyframes jump {
+    0% { bottom: var(--ground-height); }
+    50% { bottom: calc(var(--ground-height) + 150px); }
+    100% { bottom: var(--ground-height); }
+}
+
+@keyframes moveObstacle {
+    from { right: -100px; }
+    to { right: 100vw; } /* Ajuste conforme necessário para a largura da tela */
+}
+
+    #game-over-container {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #c0392b;
+    color: white;
+    text-align: center;
+}
+
+#game-over-container h1 {
+    font-size: 3em;
+}
+
+#game-over-container p {
+    font-size: 1.5em;
+    margin: 20px;
+}
+
+#game-over-container button {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #27ae60;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+#game-over-container button:hover {
+    background-color: #2ecc71;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #setup-container h1 {
+        font-size: 2em;
+    }
+
+    #setup-container input, #setup-container button {
+        width: 80%;
+        font-size: 1em;
+    }
+}
