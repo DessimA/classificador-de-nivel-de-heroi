@@ -130,6 +130,8 @@ aventura-do-heroi/
 4. **Abra o arquivo** `index.html` em um navegador web
 5. **Comece a jogar!**
 
+> 🌐 **Disponível em:** https://dessima.github.io/classificador-de-nivel-de-heroi/
+
 ## 🔧 Personalização
 
 ### Modificar Níveis
