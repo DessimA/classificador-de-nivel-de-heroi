@@ -11,6 +11,7 @@ Um jogo de corrida infinita desenvolvido em JavaScript puro, onde você controla
 ### 🎯 Gameplay
 - **Controle simples**: Pule com a barra de espaço ou toque na tela
 - **Sistema de vidas**: 3 vidas por partida
+- **Plano de fundo dinâmico**: O cenário muda para uma imagem de "uma vida" quando o herói está com apenas 1 vida restante.
 - **Progressão infinita**: Obstáculos aparecem continuamente
 - **Resposta imediata**: Animações fluidas e controles responsivos
 
@@ -29,8 +30,9 @@ Um jogo de corrida infinita desenvolvido em JavaScript puro, onde você controla
 ### 🎨 Interface
 - **HUD informativo**: Nome do herói, XP atual, nível e vidas
 - **Tela de configuração**: Personalize o nome do seu herói
-- **Tela de game over**: Estatísticas finais da partida
+- **Tela de game over**: Estatísticas finais da partida com um plano de fundo temático de "derrota".
 - **Design responsivo**: Funciona em desktop e mobile
+- **Feedback visual de vida baixa**: O plano de fundo do jogo muda para `one-life.png` quando o herói tem apenas 1 vida, proporcionando um aviso visual.
 
 ## 🚀 Como Jogar
 
@@ -78,7 +80,9 @@ aventura-do-heroi/
 └── assets/
     └── img/
         ├── hero-run.gif   # Animação do herói correndo
-        └── hero-jump.gif  # Animação do herói pulando
+        ├── hero-jump.gif  # Animação do herói pulando
+        ├── one-life.png   # Imagem de fundo para quando o herói tem 1 vida
+        └── you-lose.png   # Imagem de fundo para a tela de Game Over
 ```
 
 ## ⚙️ Recursos Técnicos
@@ -94,7 +98,7 @@ aventura-do-heroi/
 - Limpeza de event listeners e intervalos
 
 ### Animações CSS
-- **Pulo do herói**: Animação de 0.8s com curva suave
+- **Pulo do herói**: Animação de 1.0s com curva suave
 - **Movimento do obstáculo**: Translação da direita para esquerda em 2.5s
 - **Transições de tela**: Efeitos hover nos botões
 
@@ -116,6 +120,7 @@ aventura-do-heroi/
 - ✅ Controle de animações melhorado
 - ✅ Suporte à tecla Enter na tela inicial
 - ✅ Pausa após colisão para melhor feedback
+- ✅ **Plano de fundo dinâmico**: Adição de um plano de fundo visualmente distinto quando o herói tem apenas 1 vida restante.
 
 ## 🚀 Como Executar
 
@@ -145,12 +150,15 @@ const levels = [
 - **Cores**: Edite as variáveis CSS em `:root`
 - **Tamanhos**: Ajuste `--hero-width`, `--hero-height`, etc.
 - **Animações**: Modifique os keyframes no CSS
+- **Plano de fundo de 1 vida**: Substitua `assets/img/one-life.png` pela sua própria imagem.
 
 ## 🎨 Assets Recomendados
 
 Para melhor experiência visual, recomenda-se usar:
 - **hero-run.gif**: Animação de sprite do herói correndo (80x100px)
 - **hero-jump.gif**: Animação de sprite do herói pulando (80x100px)
+- **one-life.png**: Imagem para o plano de fundo quando o herói tem 1 vida (resolução recomendada: 1920x1080px ou superior).
+- **you-lose.png**: Imagem para o plano de fundo da tela de Game Over (resolução recomendada: 1920x1080px ou superior).
 
 ## 🤝 Contribuição
 

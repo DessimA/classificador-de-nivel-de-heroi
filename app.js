@@ -1,204 +1,268 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const hero = document.getElementById('hero');
-    const obstacle = document.getElementById('obstacle');
-    const gameContainer = document.getElementById('game-container');
-    const setupContainer = document.getElementById('setup-container');
-    const heroNameInput = document.getElementById('heroNameInput');
-    const startGameButton = document.getElementById('startGameButton');
-    const heroInfo = document.getElementById('hero-info');
-    const xpInfo = document.getElementById('xp-info');
-    const levelInfo = document.getElementById('level-info');
-    const livesInfo = document.getElementById('lives-info');
-    const gameOverContainer = document.getElementById('game-over-container');
-    const finalScore = document.getElementById('final-score');
-    const restartGameButton = document.getElementById('restartGameButton');
+/**
+ * Hero Adventure Game - MINIMAL DEBUGGING SCRIPT
+ */
 
-    let heroName = '';
-    let heroXp = 0;
-    let heroLives = 3;
-    let isJumping = false;
-    let gameInterval = null;
-    let keydownListener = null;
-    let touchstartListener = null;
-
-    const levels = [
-        { name: "Ferro", minXp: 0, maxXp: 1000 },
-        { name: "Bronze", minXp: 1001, maxXp: 2000 },
-        { name: "Prata", minXp: 2001, maxXp: 5000 },
-        { name: "Ouro", minXp: 5001, maxXp: 7000 },
-        { name: "Platina", minXp: 7001, maxXp: 8000 },
-        { name: "Ascendente", minXp: 8001, maxXp: 9000 },
-        { name: "Imortal", minXp: 9001, maxXp: 10000 },
-        { name: "Radiante", minXp: 10001, maxXp: Infinity },
-    ];
-
-    const getHeroLevel = (xp) => {
-        return levels.find(l => xp >= l.minXp && xp <= l.maxXp)?.name || "Desconhecido";
+class HeroAdventureGame {
+    static CONSTANTS = {
+        INITIAL_LIVES: 3,
+        XP_PER_OBSTACLE: 100,
+        JUMP_DURATION: 1000, // Corresponds to CSS animation duration
+        GAME_LOOP_INTERVAL: 16,
+        COLLISION_TOLERANCE: 10,
+        OBSTACLE_RESET_DELAY: 500, // Shorter for faster testing
+        ANIMATION_RESET_DELAY: 100,
+        LEVELS: Object.freeze([
+            { name: "Ferro", minXp: 0, maxXp: 1000 },
+            { name: "Bronze", minXp: 1001, maxXp: 2000 },
+            { name: "Prata", minXp: 2001, maxXp: 5000 },
+            { name: "Ouro", minXp: 5001, maxXp: 7000 },
+            { name: "Platina", minXp: 7001, maxXp: 8000 },
+            { name: "Ascendente", minXp: 8001, maxXp: 9000 },
+            { name: "Imortal", minXp: 9001, maxXp: 10000 },
+            { name: "Radiante", minXp: 10001, maxXp: Infinity },
+        ])
     };
 
-    const updateHUD = () => {
-        heroInfo.textContent = `Herói: ${heroName}`;
-        xpInfo.textContent = `XP: ${heroXp}`;
-        levelInfo.textContent = `Nível: ${getHeroLevel(heroXp)}`;
-        livesInfo.textContent = `Vidas: ${heroLives}`;
-    };
+    constructor() {
+        this.elements = this._cacheElements();
+        this.gameState = {};
+        this._initialize();
+    }
 
-    const jump = () => {
-        if (isJumping) return;
-        isJumping = true;
-        hero.classList.add('jump');
-        setTimeout(() => {
-            hero.classList.remove('jump');
-            isJumping = false;
-        }, 800);
-    };
+    _cacheElements() {
+        const elements = {};
+        const selectors = [
+            'hero', 'obstacle', 'game-container', 'setup-container',
+            'heroNameInput', 'startGameButton', 'hero-info', 'xp-info',
+            'level-info', 'lives-info', 'game-over-container',
+            'final-score', 'restartGameButton'
+        ];
+        selectors.forEach(id => elements[id] = document.getElementById(id));
+        return elements;
+    }
 
-    const checkCollisionAndScore = () => {
-        const heroRect = hero.getBoundingClientRect();
-        const obstacleRect = obstacle.getBoundingClientRect();
+    _initialize() {
+        this.elements.startGameButton.addEventListener('click', () => this.startGame());
+        this.elements.restartGameButton.addEventListener('click', () => this.restartGame());
 
-        // Collision detection - melhorada para ser mais precisa
-        if (
+        // Use animationend to reliably reset state after animations
+        this.elements.hero.addEventListener('animationend', (e) => {
+            if (e.animationName === 'jump') {
+                this.elements.hero.classList.remove('jump');
+                this.gameState.isJumping = false;
+            }
+        });
+
+        // The simplified CSS handles infinite animation, so this is for collision reset
+        this.elements.obstacle.addEventListener('animationend', () => {
+            this._resetObstacle(); // Reset after it completes a cycle
+        });
+    }
+
+    getHeroLevel(xp) {
+        return HeroAdventureGame.CONSTANTS.LEVELS.find(l => xp >= l.minXp && xp <= l.maxXp)?.name || "Desconhecido";
+    }
+
+    _updateHUD() {
+        this.elements['hero-info'].textContent = `Herói: ${this.gameState.heroName}`;
+        this.elements['xp-info'].textContent = `XP: ${this.gameState.heroXp}`;
+        this.elements['level-info'].textContent = `Nível: ${this.getHeroLevel(this.gameState.heroXp)}`;
+        this.elements['lives-info'].textContent = `Vidas: ${this.gameState.heroLives}`;
+
+        // Update game container class based on lives
+        if (this.gameState.heroLives === 1) {
+            this.elements['game-container'].classList.add('one-life-mode');
+        } else {
+            this.elements['game-container'].classList.remove('one-life-mode');
+        }
+    }
+
+    jump() {
+        if (this.gameState.isJumping || !this.gameState.isGameRunning) return;
+        this.gameState.isJumping = true;
+        this.elements.hero.classList.add('jump');
+    }
+
+    _checkCollisionAndScore() {
+        if (this.gameState.isInvincible) return;
+
+        const heroRect = this.elements.hero.getBoundingClientRect();
+        const obstacleRect = this.elements.obstacle.getBoundingClientRect();
+
+        const isColliding = (
             heroRect.right > obstacleRect.left + 10 &&
             heroRect.left < obstacleRect.right - 10 &&
-            heroRect.bottom > obstacleRect.top + 10 &&
-            heroRect.top < obstacleRect.bottom - 10
-        ) {
-            heroLives--;
-            updateHUD();
+            heroRect.bottom > obstacleRect.top + 10
+        );
 
-            if (heroLives <= 0) {
-                endGame();
-                return;
-            }
-
-            // Reset obstacle after collision
-            resetObstacle();
-        }
-
-        // Award XP when the obstacle is passed
-        if (obstacleRect.right < heroRect.left && !obstacle.passed) {
-            heroXp += 100;
-            updateHUD();
-            obstacle.passed = true;
-        }
-    };
-
-    const resetObstacle = () => {
-        obstacle.classList.remove('move');
-        obstacle.style.right = '-100px';
-        obstacle.passed = false;
-        setTimeout(() => {
-            obstacle.classList.add('move');
-        }, 1000); // Pequena pausa após colisão
-    };
-
-    const endGame = () => {
-        clearInterval(gameInterval);
-        obstacle.classList.remove('move');
-        
-        // Remove event listeners
-        if (keydownListener) {
-            document.removeEventListener('keydown', keydownListener);
-        }
-        if (touchstartListener) {
-            document.removeEventListener('touchstart', touchstartListener);
-        }
-        
-        finalScore.textContent = `O Herói ${heroName} alcançou o rank ${getHeroLevel(heroXp)} com ${heroXp} de XP.`;
-        gameOverContainer.style.display = 'flex';
-        gameContainer.style.display = 'none';
-    };
-
-    const startGame = () => {
-        heroName = heroNameInput.value.trim();
-        if (!heroName) {
-            alert('Por favor, digite o nome do seu herói!');
+        if (isColliding) {
+            this._handleCollision();
             return;
         }
 
-        // Reset game state
-        heroXp = 0;
-        heroLives = 3;
-        isJumping = false;
-        updateHUD();
+        // If the obstacle's right edge is to the left of the hero's left edge,
+        // and we haven't scored for it yet, grant points.
+        if (obstacleRect.right < heroRect.left && !this.elements.obstacle.passed) {
+            this._handleObstaclePassed();
+        }
+    }
 
-        // Show game and hide setup
-        setupContainer.style.display = 'none';
-        gameContainer.style.display = 'block';
-        obstacle.style.display = 'block';
-        obstacle.passed = false;
+    _handleCollision() {
+        this.gameState.heroLives--;
+        this._updateHUD();
 
-        // Start obstacle movement
-        obstacle.style.right = '-100px';
-        obstacle.classList.add('move');
+        if (this.gameState.heroLives <= 0) {
+            this._endGame();
+            return;
+        }
+
+        // Start invincibility period
+        this.gameState.isInvincible = true;
+        this.elements.hero.classList.add('hero-hit');
+        this.elements.obstacle.style.display = 'none'; // Hide obstacle immediately
+
+        setTimeout(() => {
+            this.gameState.isInvincible = false;
+            this.elements.hero.classList.remove('hero-hit');
+            this._resetObstacle(); // Respawn obstacle after invincibility ends
+        }, 1500); // 1.5 second invincibility
+    }
+
+    _handleObstaclePassed() {
+        this.gameState.heroXp += HeroAdventureGame.CONSTANTS.XP_PER_OBSTACLE;
+        this.elements.obstacle.passed = true;
+
+        // Increase speed by reducing animation duration, but don't apply it yet
+        this.gameState.obstacleDuration /= 1.01;
+
+        this._updateHUD();
+    }
+
+    _resetObstacle() {
+        // This function is called to respawn the obstacle. It ensures the animation
+        // restarts from the beginning by forcing a CSS reflow.
+        this.elements.obstacle.classList.remove('move');
+        this.elements.obstacle.passed = false;
+
+        // Apply the current speed before restarting the animation
+        this.elements.obstacle.style.animationDuration = `${this.gameState.obstacleDuration}s`;
+
+        // Use a timeout to re-add the class in a separate 'tick'.
+        // This forces the browser to restart the animation.
+        setTimeout(() => {
+            if (this.gameState.isGameRunning) {
+                this.elements.obstacle.style.display = 'block'; // Ensure it's visible
+                this.elements.obstacle.classList.add('move');
+            }
+        }, 10);
+    }
+
+    _endGame() {
+        this.gameState.isGameRunning = false;
+        clearInterval(this.gameState.gameLoopId);
+        this._cleanupGameControls(); // Cleanup controls when game ends
+        this.elements.obstacle.classList.remove('move');
+        this.elements['final-score'].textContent = `Fim de Jogo! Nível: ${this.getHeroLevel(this.gameState.heroXp)} | XP: ${this.gameState.heroXp}`;
+        this._showScreen('game-over-container');
+    }
+
+    startGame() {
+        const heroName = this.elements.heroNameInput.value.trim();
+        if (!heroName) {
+            alert('Digite o nome do seu herói!');
+            return;
+        }
+
+        this._resetGameState(heroName);
+        this._updateHUD();
+        this._showScreen('game-container');
+        this._setupGameControls();
         
-        // Start game loop
-        gameInterval = setInterval(checkCollisionAndScore, 10);
+        this.gameState.gameLoopId = setInterval(() => {
+            if (this.gameState.isGameRunning) {
+                this._checkCollisionAndScore();
+            }
+        }, HeroAdventureGame.CONSTANTS.GAME_LOOP_INTERVAL);
 
-        // Add event listeners for controls
-        keydownListener = (e) => {
+        this._setupObstacle();
+    }
+
+    _resetGameState(heroName) {
+        this.gameState = {
+            heroName,
+            heroXp: 0,
+            heroLives: HeroAdventureGame.CONSTANTS.INITIAL_LIVES,
+            isJumping: false,
+            isGameRunning: true,
+            isInvincible: false, // Add invincibility state
+            gameLoopId: this.gameState.gameLoopId || null,
+            obstacleDuration: 2.5 // Initial animation duration in seconds
+        };
+    }
+
+    _setupObstacle() {
+        this.elements.obstacle.style.display = 'block';
+        this.elements.obstacle.passed = false;
+        // Set the initial animation speed
+        this.elements.obstacle.style.animationDuration = `${this.gameState.obstacleDuration}s`;
+        this.elements.obstacle.classList.add('move');
+    }
+
+    _setupGameControls() {
+        this.keydownHandler = (e) => {
             if (e.code === 'Space') {
-                e.preventDefault(); // Previne scroll da página
-                jump();
+                e.preventDefault();
+                this.jump();
             }
         };
-        
-        touchstartListener = (e) => {
-            e.preventDefault(); // Previne comportamentos padrão do touch
-            jump();
+        document.addEventListener('keydown', this.keydownHandler);
+
+        this._setupMobileControls(); // Setup mobile controls
+    }
+
+    _cleanupGameControls() {
+        if (this.keydownHandler) {
+            document.removeEventListener('keydown', this.keydownHandler);
+        }
+        this._cleanupMobileControls(); // Cleanup mobile controls
+    }
+
+    _setupMobileControls() {
+        this.touchHandler = (e) => {
+            e.preventDefault();
+            this.jump();
         };
+        this.elements['game-container'].addEventListener('touchstart', this.touchHandler);
+    }
 
-        document.addEventListener('keydown', keydownListener);
-        document.addEventListener('touchstart', touchstartListener);
-    };
+    _cleanupMobileControls() {
+        if (this.touchHandler) {
+            this.elements['game-container'].removeEventListener('touchstart', this.touchHandler);
+        }
+    }
 
-    const restartGame = () => {
-        // Reset obstacle
-        obstacle.classList.remove('move');
-        obstacle.style.right = '-100px';
-        obstacle.style.display = 'none';
-        obstacle.passed = false;
-        
-        // Remove jump class if present
-        hero.classList.remove('jump');
-        
-        // Clear any existing interval
-        if (gameInterval) {
-            clearInterval(gameInterval);
-        }
-        
-        // Remove event listeners
-        if (keydownListener) {
-            document.removeEventListener('keydown', keydownListener);
-        }
-        if (touchstartListener) {
-            document.removeEventListener('touchstart', touchstartListener);
-        }
-        
-        // Show setup screen
-        gameOverContainer.style.display = 'none';
-        setupContainer.style.display = 'flex';
-        
-        // Clear input
-        heroNameInput.value = '';
-    };
+    restartGame() {
+        clearInterval(this.gameState.gameLoopId);
+        this._cleanupGameControls();
+        this._resetElements();
+        this._showScreen('setup-container');
+    }
 
-    // Event listeners for buttons
-    startGameButton.addEventListener('click', startGame);
-    restartGameButton.addEventListener('click', restartGame);
+    _resetElements() {
+        this.elements.hero.classList.remove('jump');
+        this.elements.obstacle.classList.remove('move');
+        this.elements.obstacle.style.display = 'none';
+    }
 
-    // Handle obstacle animation end
-    obstacle.addEventListener('animationend', () => {
-        if (obstacle.classList.contains('move')) {
-            resetObstacle();
-        }
-    });
+    _showScreen(screenId) {
+        ['setup-container', 'game-container', 'game-over-container'].forEach(id => {
+            this.elements[id].style.display = (id === screenId) ? 'flex' : 'none';
+        });
+        if (screenId === 'game-container') this.elements[screenId].style.display = 'block';
+    }
+}
 
-    // Allow Enter key to start game
-    heroNameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            startGame();
-        }
-    });
+// Initialize game when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.heroGame = new HeroAdventureGame();
 });

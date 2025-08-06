@@ -16,18 +16,28 @@
         </div>
         <div id="hero"></div>
         <div id="obstacle"></div>
+        <div id="one-life-overlay"></div> <!-- New overlay for one life mode -->
     </div>
 
-    <div id="setup-container">
+    <div id="setup-container" class="screen">
         <h1>Prepare seu Herói</h1>
         <input type="text" id="heroNameInput" placeholder="Digite o nome do seu herói">
-        <button id="startGameButton">Iniciar Aventura</button>
+        <button id="startGameButton" class="btn">Iniciar Aventura</button>
+
+        <div class="instructions">
+            <h2>Como Jogar:</h2>
+            <p>Supere obstáculos para ganhar XP e subir de nível!</p>
+            <p>Você tem 3 vidas. Cuidado para não colidir!</p>
+            <h3>Controles:</h3>
+            <p><strong>Desktop:</strong> Pressione <kbd>ESPAÇO</kbd> para saltar.</p>
+            <p><strong>Mobile:</strong> Toque em qualquer lugar da tela para saltar.</p>
+        </div>
     </div>
 
-    <div id="game-over-container">
+    <div id="game-over-container" class="screen">
         <h1>Game Over</h1>
         <p id="final-score"></p>
-        <button id="restartGameButton">Jogar Novamente</button>
+        <button id="restartGameButton" class="btn">Jogar Novamente</button>
     </div>
 
     <script src="app.js"></script>
