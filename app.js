@@ -6,7 +6,7 @@ class HeroAdventureGame {
     static CONSTANTS = {
         INITIAL_LIVES: 3,
         XP_PER_OBSTACLE: 100,
-        JUMP_DURATION: 1000, // Corresponds to CSS animation duration
+        JUMP_DURATION: 300, // Corresponds to CSS animation duration
         GAME_LOOP_INTERVAL: 16,
         COLLISION_TOLERANCE: 10,
         OBSTACLE_RESET_DELAY: 500, // Shorter for faster testing
@@ -57,6 +57,8 @@ class HeroAdventureGame {
         this.elements.obstacle.addEventListener('animationend', () => {
             this._resetObstacle(); // Reset after it completes a cycle
         });
+
+        this._showScreen('setup-container'); // Ensure setup screen is shown on init
     }
 
     getHeroLevel(xp) {
@@ -256,9 +258,14 @@ class HeroAdventureGame {
 
     _showScreen(screenId) {
         ['setup-container', 'game-container', 'game-over-container'].forEach(id => {
-            this.elements[id].style.display = (id === screenId) ? 'flex' : 'none';
+            this.elements[id].style.display = 'none'; // Hide all by default
         });
-        if (screenId === 'game-container') this.elements[screenId].style.display = 'block';
+        // Show the requested screen
+        if (screenId === 'game-container') {
+            this.elements[screenId].style.display = 'block'; // Game container is block
+        } else {
+            this.elements[screenId].style.display = 'flex'; // Other screens are flex
+        }
     }
 }
 
