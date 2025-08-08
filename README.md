@@ -17,6 +17,8 @@ O projeto foi extensivamente otimizado para **dispositivos móveis**, com um lay
 
 Cada obstáculo superado concede **100 XP**. O jogo acelera progressivamente, e o jogador tem **3 vidas**.
 
+> 🎮 O jogo está diponível em: https://dessima.github.io/classificador-de-nivel-de-heroi/
+
 ## 📂 Estrutura de Arquivos
 
 O projeto utiliza uma estrutura clara para separar as responsabilidades:
@@ -119,3 +121,4 @@ graph TD
         N -- Jogar Novamente --> D;
     end
 ```
+
