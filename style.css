@@ -1,7 +1,11 @@
 /* ===== CSS CUSTOM PROPERTIES (DESIGN TOKENS) ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 :root {
     /* Layout tokens */
-    --ground-height: clamp(40px, 5vh, 60px); /* Responsive ground height */
+    --ground-height: clamp(40px, 5dvh, 60px); /* Responsive ground height */
     --hero-base-width: 80px;
     --hero-base-height: 100px;
     --obstacle-base-width: 180px;
@@ -62,7 +66,6 @@
 /* ===== BASE STYLES ===== */
 body {
     margin: 0;
-    overflow: hidden;
     font-family: 'Press Start 2P', 'Courier New', Courier, monospace; /* Adicionando fonte cyberpunk */
     background-color: var(--color-bg-primary);
     color: white;
@@ -72,9 +75,11 @@ body {
 
 /* ===== GAME CONTAINER ===== */
 #game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
+    position: fixed; /* Use fixed to anchor to viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: none; /* Controlled by JS */
     background-image: url('assets/img/background.png');
     background-size: cover;
@@ -199,8 +204,11 @@ body {
 
 /* ===== UI SCREENS ===== */
 .screen {
-    width: 100vw;
-    height: 100vh;
+    position: fixed; /* Use fixed to anchor to viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -308,5 +316,161 @@ button {
 button:hover {
     background: rgba(var(--color-neon-yellow), 0.2); /* Efeito hover */
     box-shadow: var(--shadow-glow-md) var(--color-neon-yellow); /* Brilho no hover */
+}
+
+/* ===== MOBILE RESPONSIVENESS (COMPACT) ===== */
+@media screen and (max-width: 768px) {
+    /* --- General Mobile Adjustments --- */
+    :root {
+        /* Drastically smaller fonts for mobile */
+        --font-size-base: 0.6rem;
+        --font-size-lg: 0.7rem;
+        --font-size-xl: 0.8rem;
+        --font-size-2xl: 1rem;
+        --font-size-4xl: 1.5rem;
+
+        /* Drastically smaller spacing for mobile */
+        --space-xs: 2px;
+        --space-sm: 4px;
+        --space-md: 6px;
+        --space-lg: 8px;
+
+        /* Compact elements */
+        --hero-width: 60px;
+        --hero-height: 75px;
+        --obstacle-width: 100px;
+        --obstacle-height: 60px;
+        --ground-height: 15px; /* Compact ground */
+    }
+
+    /* --- Screen Layouts --- */
+    .screen {
+        padding: var(--space-md);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #setup-container {
+        justify-content: flex-start; /* Align to top */
+    }
+
+    /* --- Game Elements --- */
+    #hud {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+        transform: scale(0.75); /* Scaled down HUD */
+        transform-origin: top left;
+    }
+
+    #hero {
+        left: 20px;
+        bottom: var(--ground-height);
+    }
+
+    #obstacle {
+        bottom: var(--ground-height);
+    }
+
+    /* --- UI Elements --- */
+    h1 {
+        font-size: var(--font-size-2xl);
+    }
+
+    .instructions {
+        max-width: 95%;
+        padding: var(--space-sm);
+        margin-top: var(--space-md);
+    }
+
+    input, button {
+        font-size: var(--font-size-lg);
+        padding: var(--space-md);
+        margin: var(--space-md);
+        min-height: 40px;
+    }
+
+    input {
+        font-size: 16px !important; /* Prevent iOS zoom */
+    }
+
+    /* --- Orientation Specific --- */
+    @media (orientation: portrait) {
+        #game-container, .screen {
+            display: none !important;
+        }
+        body::before {
+            content: "🔄 Gire para a horizontal";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; color: var(--color-neon-yellow);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; font-size: 1rem;
+        }
+    }
+
+    @media (orientation: landscape) {
+        body::before { display: none; }
+
+        #setup-container {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-md);
+        }
+        .setup-column { display: flex; flex-direction: column; align-items: center; }
+        .instructions { max-width: 45%; margin-top: 0; transform: scale(0.9); }
+    }
+}
+
+/* ===== VERY SMALL SCREENS ===== */
+@media screen and (max-width: 480px) {
+    :root {
+        --hero-width: clamp(45px, 10vw, 55px);
+        --hero-height: clamp(55px, 12vw, 70px);
+        --obstacle-width: clamp(80px, 16vw, 100px);
+        --obstacle-height: clamp(50px, 10vw, 65px);
+        --font-size-4xl: clamp(1.2rem, 2.5vw, 1.5rem);
+    }
+
+    #hud {
+        font-size: clamp(0.5rem, 1vw, 0.7rem);
+    }
+}
+
+/* ===== PREVENT UNWANTED BEHAVIORS ON MOBILE ===== */
+@media screen and (max-width: 768px) {
+    /* Prevent text selection */
+    * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    /* Allow text selection on inputs */
+    input, textarea {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    /* Prevent bounce scrolling on game container only */
+    #game-container {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Prevent zoom */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+
+    /* Remove tap highlight */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
 }
 

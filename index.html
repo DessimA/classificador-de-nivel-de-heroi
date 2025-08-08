@@ -2,9 +2,12 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Aventura do Herói</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.0">
 </head>
 <body>
     <div id="game-container">
@@ -20,9 +23,11 @@
     </div>
 
     <div id="setup-container" class="screen">
-        <h1>Prepare seu Herói</h1>
-        <input type="text" id="heroNameInput" placeholder="Digite o nome do seu herói">
-        <button id="startGameButton" class="btn">Iniciar Aventura</button>
+        <div class="setup-column">
+            <h1>Prepare seu Herói</h1>
+            <input type="text" id="heroNameInput" placeholder="Digite o nome do seu herói">
+            <button id="startGameButton" class="btn">Iniciar Aventura</button>
+        </div>
 
         <div class="instructions">
             <h2>Como Jogar:</h2>

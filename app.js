@@ -1,5 +1,5 @@
 /**
- * Hero Adventure Game - MINIMAL DEBUGGING SCRIPT
+ * Hero Adventure Game - MOBILE OPTIMIZED VERSION
  */
 
 class HeroAdventureGame {
@@ -27,6 +27,7 @@ class HeroAdventureGame {
         this.elements = this._cacheElements();
         this.gameState = {};
         this._initialize();
+        this._setupMobileOptimizations();
     }
 
     _cacheElements() {
@@ -39,6 +40,61 @@ class HeroAdventureGame {
         ];
         selectors.forEach(id => elements[id] = document.getElementById(id));
         return elements;
+    }
+
+    _setupMobileOptimizations() {
+        // Prevent default touch behaviors
+        document.addEventListener('touchstart', (e) => {
+            if (e.target === this.elements['game-container'] || 
+                e.target.closest('#game-container')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('#game-container')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', (e) => {
+            if (e.target.closest('#game-container')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Handle orientation changes
+        this._handleOrientationChange();
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this._handleOrientationChange(), 100);
+        });
+
+        // Prevent context menu on long press
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Handle Enter key on setup screen
+        this.elements.heroNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.startGame();
+            }
+        });
+    }
+
+    _handleOrientationChange() {
+        // Force viewport recalculation
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.setAttribute('content', 
+                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        }
+
+        // Trigger resize event to recalculate game elements
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 200);
     }
 
     _initialize() {
@@ -91,10 +147,22 @@ class HeroAdventureGame {
         const heroRect = this.elements.hero.getBoundingClientRect();
         const obstacleRect = this.elements.obstacle.getBoundingClientRect();
 
+        // Create a more precise, virtual hitbox based on user feedback
+        // Visible part is 50% of width and 90% of height, centered.
+        const horizontalOffset = obstacleRect.width * 0.25; // 25% transparent on each side
+        const verticalOffset = obstacleRect.height * 0.05;   // 5% transparent on top
+
+        const virtualHitbox = {
+            left: obstacleRect.left + horizontalOffset,
+            right: obstacleRect.right - horizontalOffset,
+            top: obstacleRect.top + verticalOffset,
+            bottom: obstacleRect.bottom // Bottom is on the ground, no offset needed
+        };
+
         const isColliding = (
-            heroRect.right > obstacleRect.left + 10 &&
-            heroRect.left < obstacleRect.right - 10 &&
-            heroRect.bottom > obstacleRect.top + 10
+            heroRect.right > virtualHitbox.left &&
+            heroRect.left < virtualHitbox.right &&
+            heroRect.bottom > virtualHitbox.top
         );
 
         if (isColliding) {
